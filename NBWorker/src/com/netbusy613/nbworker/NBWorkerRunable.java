@@ -43,7 +43,7 @@ public class NBWorkerRunable implements Runnable {
             }
         } catch (InterruptedException ex) {
         }
-        while (true) {
+        while (manager.goon) {
             NBpack pack = manager.readPack();
             if (pack != null) {
                 PackOP op = registedOPImpl.get(pack.FLAG);
