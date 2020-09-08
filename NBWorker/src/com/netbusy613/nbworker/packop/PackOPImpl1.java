@@ -21,7 +21,7 @@ public class PackOPImpl1 extends PackOP{
         Object o = new Date();
         synchronized(o){
             try {
-                o.wait(2000);
+                o.wait(1000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(PackOPImpl1.class.getName()).log(Level.SEVERE, null, ex);
             }

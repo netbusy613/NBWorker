@@ -17,13 +17,20 @@ public class NBWorkerRunable implements Runnable {
     private final Object stateControl;
     private final Map<String, PackOP> registedOPImpl;
     private boolean running = false;
+    private boolean waitting = false;
+
+    // 判断线程是否在等待中
+    public boolean isWaitting() {
+        return running && waitting;
+    }
     private int id;
 
+    // 判断线程是否已运行
     public boolean isRunning() {
         return running;
     }
 
-    public NBWorkerRunable(NBPackManager manager, Object stateControl,int id) {
+    public NBWorkerRunable(NBPackManager manager, Object stateControl, int id) {
         this.manager = manager;
         registedOPImpl = manager.registedOPImpl();
         this.stateControl = stateControl;
@@ -35,11 +42,15 @@ public class NBWorkerRunable implements Runnable {
         try {
             synchronized (stateControl) {
                 running = true;
-                System.out.println("线程 "+id + " 已启动....");
+                System.out.println("线程 " + id + " 已启动....");
                 stateControl.notify();
             }
             synchronized (manager.control) {
+                waitting = true;
+                manager.updateWaitStatu();
                 manager.control.wait();
+                waitting = false;
+                
             }
         } catch (InterruptedException ex) {
         }
@@ -54,14 +65,19 @@ public class NBWorkerRunable implements Runnable {
                 }
             } else {
                 try {
-                    System.out.println("线程 "+id + "休息....");
+                    System.out.println("线程 " + id + "休息....");
                     synchronized (manager.control) {
+                        waitting = true;
+                        manager.updateWaitStatu();
                         manager.control.wait();
+                        waitting = false;
                     }
                 } catch (InterruptedException ex) {
                 }
             }
         }
+        // 线程运行完毕
+        running = false;
     }
 
 }

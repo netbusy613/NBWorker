@@ -24,6 +24,7 @@ public class NBPackManager {
     public boolean goon = true;
 
     public final Object control = new Date();
+    public final Object waitControl = new Date();
     private NBpack[] packs;
     private int read_point = 0;
     private int write_point = 0;
@@ -33,6 +34,8 @@ public class NBPackManager {
     private int COUNT_THREADS = 10;
 
     private Map<String, Class> registedOP;
+
+    private NBWorkerRunable[] rs;
 
     public Map<String, PackOP> registedOPImpl() {
         Map<String, PackOP> re = new HashMap<>();
@@ -71,21 +74,27 @@ public class NBPackManager {
         packs = new NBpack[COUNT_MAXPACKS];
         registPackage("com.netbusy613.nbworker.packop");
         Object statuControl = new Date();
-        NBWorkerRunable[] rs = new NBWorkerRunable[getCOUNT_THREADS()];
+        rs = new NBWorkerRunable[getCOUNT_THREADS()];
         System.out.println("开始启动线程");
         for (int i = 0; i < getCOUNT_THREADS(); i++) {
             rs[i] = new NBWorkerRunable(this, statuControl, i);
+        }
+        for (int i = 0; i < getCOUNT_THREADS(); i++) {
             Thread tr = new Thread(rs[i]);
             tr.setDaemon(false);
             tr.start();
             System.out.println("启动线程" + i);
         }
+        // 判断所有线程是否已经启动完成
         while (true) {
             synchronized (statuControl) {
 
                 boolean ifall = true;
                 for (NBWorkerRunable r : rs) {
-                    ifall = r.isRunning() && ifall;
+                    if (!r.isRunning()) {
+                        ifall = false;
+                        break;
+                    }
                 }
                 if (ifall) {
                     break;
@@ -98,14 +107,6 @@ public class NBPackManager {
             }
         }
         System.out.println("线程启动完成！");
-        Object lock = new Date();
-//        synchronized (lock) {
-//            try {
-//                lock.wait();
-//            } catch (InterruptedException ex) {
-//                Logger.getLogger(NBPackManager.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        }
     }
 
     //注册flag和处理方法；处理方法为继承了 PackOP的类
@@ -146,7 +147,7 @@ public class NBPackManager {
 
     public void addPack(NBpack pack) throws ListFullException {
         synchronized (control) {
-            if(write_point+1==read_point){
+            if (write_point + 1 == read_point) {
                 throw new ListFullException();
             }
             packs[write_point] = pack;
@@ -161,10 +162,27 @@ public class NBPackManager {
     public int count() {
         synchronized (control) {
             if (write_point >= read_point) {
-                return write_point-read_point;
-            }else{
-                return write_point+COUNT_MAXPACKS-read_point;
+                return write_point - read_point;
+            } else {
+                return write_point + COUNT_MAXPACKS - read_point;
             }
+        }
+    }
+
+    public void updateWaitStatu() {
+        int c = 0;
+        for (NBWorkerRunable r : rs) {
+            if (r.isWaitting()) {
+                c++;
+            }
+        }
+        if (c == rs.length) {
+            synchronized (waitControl) {
+                System.out.println("全部线程休息....");
+                waitControl.notify();
+            }
+        } else {
+            System.out.println("还有"+(rs.length-c)+"线程运行。");
         }
     }
 }
