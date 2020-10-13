@@ -10,6 +10,15 @@ package com.netbusy613.nbworker;
  * @author Administrator
  */
 public abstract class PackOP {
+    protected int duration = 60000;//60000毫秒
+
+    public int getDuration() {
+        return duration;
+    }
+    
+    public PackOP(int duration){
+        this.duration = duration;
+    }
     public PackOP(){
     }
     public abstract void doing(String json);

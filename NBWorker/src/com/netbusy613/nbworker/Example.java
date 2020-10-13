@@ -17,10 +17,11 @@ public class Example {
 
     public static void main(String[] args) {
         NBPackManager manager = new NBPackManager();
+        manager.setCheckduration(10000);
         manager.start();
         while (true) {
-            for (int i = 0; i < 20; i++) {
-                NBpack pBpack = new NBpack(PackOPImpl1.class.getName(), String.valueOf(i));
+            for (int i = 0; i < 2; i++) {
+                NBpack pBpack = new NBpack(PackOPImpl1.class.getName(), String.valueOf(i),5000);
                 try {
                     manager.addPack(pBpack);
                 } catch (ListFullException ex) {

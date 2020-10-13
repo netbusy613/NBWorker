@@ -18,13 +18,16 @@ public class NBpack {
         return FLAG;
     }
     protected final String json;
+    protected final int duration;
     
     /*
     @param flag Package FLAG
     @param json Package param
     */
-    public NBpack(String flag,String json) {
+    public NBpack(String flag,String json,int duration) {
         this.FLAG = flag;
         this.json = json;
+        this.duration = duration;
     }
+    
 }

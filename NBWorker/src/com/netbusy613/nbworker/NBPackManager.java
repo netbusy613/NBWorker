@@ -25,6 +25,9 @@ public class NBPackManager {
 
     public final Object control = new Date();
     public final Object waitControl = new Date();
+    public final Object statuControl = new Date();
+    //线程处理超时检查控制器
+    public final Object timeControl = new Date();
     private NBpack[] packs;
     private int read_point = 0;
     private int write_point = 0;
@@ -33,9 +36,39 @@ public class NBPackManager {
     //开启线程数
     private int COUNT_THREADS = 10;
 
+    private int MAX_THREADS = 100;
+
+    //默认超时检查每分钟运行一次
+    private int checkduration = 60000;//1 min
+
+    public int getCheckduration() {
+        return checkduration;
+    }
+
+    //设置线程超时检查时间间隔
+    public void setCheckduration(int checkduration) {
+        if (this.checkduration == 0 && checkduration != 0) {
+            synchronized (timeControl) {
+                this.checkduration = checkduration;
+                timeControl.notify();
+            }
+        } else {
+            this.checkduration = checkduration;
+        }
+    }
+
     private Map<String, Class> registedOP;
 
     private NBWorkerRunable[] rs;
+    private Thread[] ts;
+
+    public NBWorkerRunable[] getRs() {
+        return rs;
+    }
+
+    public Thread[] getTs() {
+        return ts;
+    }
 
     public Map<String, PackOP> registedOPImpl() {
         Map<String, PackOP> re = new HashMap<>();
@@ -67,15 +100,34 @@ public class NBPackManager {
     }
 
     public void setCOUNT_THREADS(int COUNT_THREADS) {
+        if (COUNT_THREADS >= MAX_THREADS) {
+            COUNT_THREADS = MAX_THREADS;
+            System.err.println("COUNT_THREADS must small than MAX_THREADS, reset COUNT_THREADS =" + MAX_THREADS);
+            return;
+        }
         this.COUNT_THREADS = COUNT_THREADS;
     }
 
+    public void reStartThread(int i) {
+        ts[i].stop();
+        rs[i] = new NBWorkerRunable(this, statuControl, i);
+        Thread tr = new Thread(rs[i]);
+        tr.setDaemon(false);
+        tr.start();
+        ts[i] = tr;
+        System.out.println("重启动线程" + i);
+    }
+
     public void start() {
+        //设置待处理最大包的数量
         packs = new NBpack[COUNT_MAXPACKS];
+        //注册处理类
         registPackage("com.netbusy613.nbworker.packop");
-        Object statuControl = new Date();
-        rs = new NBWorkerRunable[getCOUNT_THREADS()];
+        //设置处理线程最大数
+        rs = new NBWorkerRunable[MAX_THREADS];
+        ts = new Thread[MAX_THREADS];
         System.out.println("开始启动线程");
+        //创建处理线程，并启动线程
         for (int i = 0; i < getCOUNT_THREADS(); i++) {
             rs[i] = new NBWorkerRunable(this, statuControl, i);
         }
@@ -83,15 +135,16 @@ public class NBPackManager {
             Thread tr = new Thread(rs[i]);
             tr.setDaemon(false);
             tr.start();
+            //将线程保存在数组中便于终止问题线程
+            ts[i] = tr;
             System.out.println("启动线程" + i);
         }
         // 判断所有线程是否已经启动完成
         while (true) {
             synchronized (statuControl) {
-
                 boolean ifall = true;
-                for (NBWorkerRunable r : rs) {
-                    if (!r.isRunning()) {
+                for (int i = 0; i < COUNT_THREADS; i++) {
+                    if (!rs[i].isRunning()) {
                         ifall = false;
                         break;
                     }
@@ -107,6 +160,11 @@ public class NBPackManager {
             }
         }
         System.out.println("线程启动完成！");
+        CheckTimerRunable ctr = new CheckTimerRunable(this, timeControl);
+        Thread tt = new Thread(ctr);
+        tt.setDaemon(false);
+        tt.start();
+
     }
 
     //注册flag和处理方法；处理方法为继承了 PackOP的类
@@ -171,8 +229,8 @@ public class NBPackManager {
 
     public void updateWaitStatu() {
         int c = 0;
-        for (NBWorkerRunable r : rs) {
-            if (r.isWaitting()) {
+        for (int i = 0; i < COUNT_THREADS; i++) {
+            if (rs[i].isWaitting()) {
                 c++;
             }
         }
@@ -182,7 +240,7 @@ public class NBPackManager {
                 waitControl.notify();
             }
         } else {
-            System.out.println("还有"+(rs.length-c)+"线程运行。");
+            System.out.println("还有" + (COUNT_THREADS - c) + "线程运行。");
         }
     }
 }

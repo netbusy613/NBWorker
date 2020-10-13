@@ -5,6 +5,7 @@
  */
 package com.netbusy613.nbworker;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -13,11 +14,40 @@ import java.util.Map;
  */
 public class NBWorkerRunable implements Runnable {
 
+    public NBPackManager getManager() {
+        return manager;
+    }
+
+    public int getId() {
+        return id;
+    }
+
     private final NBPackManager manager;
     private final Object stateControl;
     private final Map<String, PackOP> registedOPImpl;
     private boolean running = false;
     private boolean waitting = false;
+    private boolean onop = false;
+    private Date bt = null;
+    private int duration = 0;
+
+    private String nowPack = null;
+
+    public void checkDuration() throws DurationTimeOutException {
+        
+        if (bt != null) {
+            Date now = new Date();
+            int dur = (int) (now.getTime() - bt.getTime());
+            System.err.println("dur="+dur+"   duration="+duration);
+            if (duration != 0 && dur > duration) {
+                throw new DurationTimeOutException();
+            }
+        }
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
 
     // 判断线程是否在等待中
     public boolean isWaitting() {
@@ -50,16 +80,22 @@ public class NBWorkerRunable implements Runnable {
                 manager.updateWaitStatu();
                 manager.control.wait();
                 waitting = false;
-                
             }
         } catch (InterruptedException ex) {
         }
         while (manager.goon) {
+
             NBpack pack = manager.readPack();
             if (pack != null) {
                 PackOP op = registedOPImpl.get(pack.FLAG);
                 if (op != null) {
+                    onop = true;
+                    bt = new Date();
+                    nowPack = pack.json;
+                    duration = pack.duration;
                     op.doing(pack.json);
+                    bt = null;
+                    onop = false;
                 } else {
                     System.err.println("不支持的PACK，未注册PACK");
                 }
@@ -79,5 +115,4 @@ public class NBWorkerRunable implements Runnable {
         // 线程运行完毕
         running = false;
     }
-
 }
