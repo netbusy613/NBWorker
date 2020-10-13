@@ -28,5 +28,10 @@ public class PackOPImpl1 extends PackOP{
         }
         System.out.println("pack op doing "+json);
     }
+
+    @Override
+    public void errorDoing(String json) {
+        System.err.println("Error doing"+json);
+    }
     
 }

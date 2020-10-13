@@ -22,4 +22,5 @@ public abstract class PackOP {
     public PackOP(){
     }
     public abstract void doing(String json);
+    public abstract void errorDoing(String json);
 }

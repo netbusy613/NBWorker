@@ -31,18 +31,22 @@ public class NBWorkerRunable implements Runnable {
     private Date bt = null;
     private int duration = 0;
 
-    private String nowPack = null;
+    private NBpack nowPack = null;
 
     public void checkDuration() throws DurationTimeOutException {
         
         if (bt != null) {
             Date now = new Date();
             int dur = (int) (now.getTime() - bt.getTime());
-            System.err.println("dur="+dur+"   duration="+duration);
+            System.err.println("线程" + id + "处理"+nowPack+"超时！ 用时="+dur+"   限时="+duration);
             if (duration != 0 && dur > duration) {
                 throw new DurationTimeOutException();
             }
         }
+    }
+
+    public NBpack getNowPack() {
+        return nowPack;
     }
 
     public void setDuration(int duration) {
@@ -91,7 +95,7 @@ public class NBWorkerRunable implements Runnable {
                 if (op != null) {
                     onop = true;
                     bt = new Date();
-                    nowPack = pack.json;
+                    nowPack = pack;
                     duration = pack.duration;
                     op.doing(pack.json);
                     bt = null;

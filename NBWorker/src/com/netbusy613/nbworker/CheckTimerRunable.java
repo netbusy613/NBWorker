@@ -37,11 +37,11 @@ public class CheckTimerRunable implements Runnable {
                 }
                 for (int i = 0; i < manager.getCOUNT_THREADS(); i++) {
                     try {
-
                         manager.getRs()[i].checkDuration();
-                        System.err.println("线程" + i + "正常！");
                     } catch (DurationTimeOutException ex) {
-                        System.err.println("线程" + i + "处理超时！");
+                        NBpack pack = manager.getRs()[i].getNowPack();
+                        PackOP op = manager.registedOPImpl().get(pack.FLAG);
+                        op.errorDoing(pack.json);
                         manager.reStartThread(i);
                     }
                 }
