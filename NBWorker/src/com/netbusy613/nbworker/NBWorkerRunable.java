@@ -37,9 +37,9 @@ public class NBWorkerRunable implements Runnable {
         
         if (bt != null) {
             Date now = new Date();
-            int dur = (int) (now.getTime() - bt.getTime());
-            System.err.println("线程" + id + "处理"+nowPack+"超时！ 用时="+dur+"   限时="+duration);
+            int dur = (int) (now.getTime() - bt.getTime()); 
             if (duration != 0 && dur > duration) {
+                System.err.println("线程" + id + "处理"+nowPack.json+"超时！ 用时="+dur+"   限时="+duration);
                 throw new DurationTimeOutException();
             }
         }
