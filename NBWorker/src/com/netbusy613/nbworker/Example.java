@@ -18,9 +18,11 @@ public class Example {
     public static void main(String[] args) {
         NBPackManager manager = new NBPackManager();
         manager.setCheckduration(10000);
+        manager.setCOUNT_MAXPACKS(50);
+        manager.setCOUNT_THREADS(10);
         manager.start();
         while (true) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 50; i++) {
                 NBpack pBpack = new NBpack(PackOPImpl1.class.getName(), String.valueOf(i),5000);
                 try {
                     manager.addPack(pBpack);
@@ -28,6 +30,7 @@ public class Example {
                     Logger.getLogger(Example.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            System.out.println("--------------------new around!");
             synchronized (manager.waitControl) {
                 try {
                     manager.waitControl.wait();
@@ -35,6 +38,7 @@ public class Example {
                     Logger.getLogger(Example.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            
         }
     }
 }

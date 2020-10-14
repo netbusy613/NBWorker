@@ -34,12 +34,12 @@ public class NBWorkerRunable implements Runnable {
     private NBpack nowPack = null;
 
     public void checkDuration() throws DurationTimeOutException {
-        
+
         if (bt != null) {
             Date now = new Date();
-            int dur = (int) (now.getTime() - bt.getTime()); 
+            int dur = (int) (now.getTime() - bt.getTime());
             if (duration != 0 && dur > duration) {
-                System.err.println("线程" + id + "处理"+nowPack.json+"超时！ 用时="+dur+"   限时="+duration);
+                System.err.println("线程" + id + "处理" + nowPack.json + "超时！ 用时=" + dur + "   限时=" + duration);
                 throw new DurationTimeOutException();
             }
         }
@@ -88,7 +88,7 @@ public class NBWorkerRunable implements Runnable {
         } catch (InterruptedException ex) {
         }
         while (manager.goon) {
-
+            waitting = false;
             NBpack pack = manager.readPack();
             if (pack != null) {
                 PackOP op = registedOPImpl.get(pack.FLAG);

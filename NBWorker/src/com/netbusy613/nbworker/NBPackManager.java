@@ -116,6 +116,9 @@ public class NBPackManager {
         tr.start();
         ts[i] = tr;
         System.out.println("重启动线程" + i);
+        synchronized (control) {
+            control.notify();
+        }
     }
 
     public void start() {
@@ -189,9 +192,11 @@ public class NBPackManager {
     }
 
     public NBpack readPack() {
-        NBpack rePack = null;
         synchronized (control) {
+            NBpack rePack = null;
             if (read_point == write_point) {
+                read_point = 0;
+                write_point = 0;
                 return null;
             }
             rePack = packs[read_point];
@@ -199,19 +204,24 @@ public class NBPackManager {
             if (read_point == packs.length) {
                 read_point = read_point - packs.length;
             }
+            return rePack;
         }
-        return rePack;
     }
 
     public void addPack(NBpack pack) throws ListFullException {
+        System.out.println(">>>>>>w=" + write_point + " r=" + read_point + " max=" + COUNT_MAXPACKS);
         synchronized (control) {
-            if (write_point + 1 == read_point) {
+            if (write_point - read_point == COUNT_MAXPACKS) {
                 throw new ListFullException();
             }
-            packs[write_point] = pack;
+            if (write_point >= COUNT_MAXPACKS) {
+                packs[write_point - COUNT_MAXPACKS] = pack;
+            } else {
+                packs[write_point] = pack;
+            }
             write_point++;
-            if (write_point == packs.length) {
-                write_point = write_point - packs.length;
+            if (write_point + 1 == COUNT_MAXPACKS * 2) {
+                write_point = 0;
             }
             control.notifyAll();
         }
