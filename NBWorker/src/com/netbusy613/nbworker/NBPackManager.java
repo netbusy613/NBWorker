@@ -234,7 +234,7 @@ public class NBPackManager {
                 c++;
             }
         }
-        if (c == rs.length) {
+        if (c == COUNT_THREADS) {
             synchronized (waitControl) {
                 System.out.println("全部线程休息....");
                 waitControl.notify();
