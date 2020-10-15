@@ -21,8 +21,9 @@ public class Example {
         manager.setCOUNT_MAXPACKS(50);
         manager.setCOUNT_THREADS(10);
         manager.start();
+        int j = 0;
         while (true) {
-            for (int i = 0; i < 50; i++) {
+            for (int i = j; i < 50+j; i++) {
                 NBpack pBpack = new NBpack(PackOPImpl1.class.getName(), String.valueOf(i),5000);
                 try {
                     manager.addPack(pBpack);
@@ -30,6 +31,7 @@ public class Example {
                     Logger.getLogger(Example.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            j= j+50;
             System.out.println("--------------------new around!");
             synchronized (manager.waitControl) {
                 try {

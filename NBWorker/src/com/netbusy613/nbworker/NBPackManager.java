@@ -209,7 +209,7 @@ public class NBPackManager {
     }
 
     public void addPack(NBpack pack) throws ListFullException {
-        System.out.println(">>>>>>w=" + write_point + " r=" + read_point + " max=" + COUNT_MAXPACKS);
+//        System.out.println(">>>>>>w=" + write_point + " r=" + read_point + " max=" + COUNT_MAXPACKS);
         synchronized (control) {
             if (write_point - read_point == COUNT_MAXPACKS) {
                 throw new ListFullException();
