@@ -7,7 +7,6 @@ package com.netbusy613.nbworker;
 
 import java.util.Date;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -27,7 +26,7 @@ public class CheckTimerRunable implements Runnable {
     public void run() {
         while (true) {
             try {
-                System.out.println("处理超时检查线程启动！"+new Date());
+                LogUtil.Log("处理超时检查线程启动！"+new Date());
                 synchronized (control) {
                     if (manager.getCheckduration() == 0) {
                         control.wait();
@@ -46,7 +45,7 @@ public class CheckTimerRunable implements Runnable {
                     }
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(CheckTimerRunable.class.getName()).log(Level.SEVERE, null, ex);
+                LogUtil.getLog().log(Level.SEVERE, null, ex);
             }
         }
     }

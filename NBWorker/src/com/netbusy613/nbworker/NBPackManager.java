@@ -102,7 +102,7 @@ public class NBPackManager {
     public void setCOUNT_THREADS(int COUNT_THREADS) {
         if (COUNT_THREADS >= MAX_THREADS) {
             COUNT_THREADS = MAX_THREADS;
-            System.err.println("COUNT_THREADS must small than MAX_THREADS, reset COUNT_THREADS =" + MAX_THREADS);
+            LogUtil.Log("COUNT_THREADS must small than MAX_THREADS, reset COUNT_THREADS =" + MAX_THREADS);
             return;
         }
         this.COUNT_THREADS = COUNT_THREADS;
@@ -115,7 +115,7 @@ public class NBPackManager {
         tr.setDaemon(false);
         tr.start();
         ts[i] = tr;
-        System.out.println("重启动线程" + i);
+        LogUtil.Log("重启动线程" + i);
         synchronized (control) {
             control.notify();
         }
@@ -129,7 +129,7 @@ public class NBPackManager {
         //设置处理线程最大数
         rs = new NBWorkerRunable[MAX_THREADS];
         ts = new Thread[MAX_THREADS];
-        System.out.println("开始启动线程");
+        LogUtil.Log("开始启动线程");
         //创建处理线程，并启动线程
         for (int i = 0; i < getCOUNT_THREADS(); i++) {
             rs[i] = new NBWorkerRunable(this, statuControl, i);
@@ -140,7 +140,7 @@ public class NBPackManager {
             tr.start();
             //将线程保存在数组中便于终止问题线程
             ts[i] = tr;
-            System.out.println("启动线程" + i);
+            LogUtil.Log("启动线程" + i);
         }
         // 判断所有线程是否已经启动完成
         while (true) {
@@ -162,7 +162,7 @@ public class NBPackManager {
                 }
             }
         }
-        System.out.println("线程启动完成！");
+        LogUtil.Log("线程启动完成！");
         CheckTimerRunable ctr = new CheckTimerRunable(this, timeControl);
         Thread tt = new Thread(ctr);
         tt.setDaemon(false);
@@ -209,7 +209,7 @@ public class NBPackManager {
     }
 
     public void addPack(NBpack pack) throws ListFullException {
-//        System.out.println(">>>>>>w=" + write_point + " r=" + read_point + " max=" + COUNT_MAXPACKS);
+//        LogUtil.Log(">>>>>>w=" + write_point + " r=" + read_point + " max=" + COUNT_MAXPACKS);
         synchronized (control) {
             if (write_point - read_point == COUNT_MAXPACKS) {
                 throw new ListFullException();
@@ -246,11 +246,11 @@ public class NBPackManager {
         }
         if (c == COUNT_THREADS) {
             synchronized (waitControl) {
-                System.out.println("全部线程休息....");
+                LogUtil.Log("全部线程休息....");
                 waitControl.notify();
             }
         } else {
-            System.out.println("还有" + (COUNT_THREADS - c) + "线程运行。");
+            LogUtil.Log("还有" + (COUNT_THREADS - c) + "线程运行。");
         }
     }
 }

@@ -39,7 +39,7 @@ public class NBWorkerRunable implements Runnable {
             Date now = new Date();
             int dur = (int) (now.getTime() - bt.getTime());
             if (duration != 0 && dur > duration) {
-                System.err.println("线程" + id + "处理" + nowPack.json + "超时！ 用时=" + dur + "   限时=" + duration);
+                LogUtil.Log("线程" + id + "处理" + nowPack.json + "超时！ 用时=" + dur + "   限时=" + duration);
                 throw new DurationTimeOutException();
             }
         }
@@ -76,7 +76,7 @@ public class NBWorkerRunable implements Runnable {
         try {
             synchronized (stateControl) {
                 running = true;
-                System.out.println("线程 " + id + " 已启动....");
+                LogUtil.Log("线程 " + id + " 已启动....");
                 stateControl.notify();
             }
             synchronized (manager.control) {
@@ -101,11 +101,11 @@ public class NBWorkerRunable implements Runnable {
                     bt = null;
                     onop = false;
                 } else {
-                    System.err.println("不支持的PACK，未注册PACK");
+                    LogUtil.Log("不支持的PACK，未注册PACK");
                 }
             } else {
                 try {
-                    System.out.println("线程 " + id + "休息....");
+                    LogUtil.Log("线程 " + id + "休息....");
                     synchronized (manager.control) {
                         waitting = true;
                         manager.updateWaitStatu();
