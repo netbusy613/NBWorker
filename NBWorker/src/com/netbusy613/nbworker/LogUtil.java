@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -19,6 +18,9 @@ import java.util.logging.Logger;
 public class LogUtil {
 
     public static void Log(String msg) {
+        if(log==null){
+            init();
+        }
        log.info(msg);
     }
     private static Logger log;
